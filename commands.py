@@ -11,12 +11,32 @@ import backend
 class Colors:
     GREEN   = '\033[92m'
     RED     = '\033[91m'
-    CYAN    = '\033[96m'
     RESET   = '\033[0m'
 
 CommandType = typing.Callable[[list, str], int]
 
 commands: typing.Dict[str, CommandType] = dict()
+
+
+def print_tasks(tasks: typing.List[backend.Task]):
+    if not tasks:
+        sys.stdout.write('Empty...\n')
+        return
+    
+    max_id = max(map(lambda t: t.id, tasks))
+
+    for task in tasks:
+        sys.stdout.write(str(task.id).zfill(len(str(max_id))))
+        sys.stdout.write(f" {Colors.GREEN}[ x ]{Colors.RESET} - " if task.done else f" [   ] - ")
+        sys.stdout.write(task.info)
+        sys.stdout.write('\n')
+    
+    sys.stdout.write('\n')
+    sys.stdout.write(Colors.GREEN)
+    sys.stdout.write(str(len(tasks)))
+    sys.stdout.write(Colors.RESET)
+    sys.stdout.write(" results.\n")
+
 
 
 def print_usage():
@@ -41,6 +61,9 @@ def require_data_file(func: CommandType) -> CommandType:
 
 
 def run(args: typing.List[str], data_file: str) -> int:
+    if not sys.stdout.isatty():
+        Colors.GREEN = Colors.RED = Colors.RESET = ''
+    
     if not args:
         print_usage()
         return 1
@@ -101,7 +124,7 @@ def list_tasks(args: typing.List[str], data_file: str) -> int:
     else:
         tasks = list(filter(lambda t: not t.done, tasks))
     
-    print(tasks)
+    print_tasks(tasks)
     return 0
 
 
@@ -134,6 +157,7 @@ def do_task(args: typing.List[str], data_file: str) -> int:
     parser = argparse.ArgumentParser(prog='done', usage='%(prog)s [options]')
     parser.add_argument('tasks',
         nargs='+',
+        type=int,
         help='ID of the task.',
         )
     options = parser.parse_args(args)
@@ -155,6 +179,7 @@ def do_task(args: typing.List[str], data_file: str) -> int:
     parser = argparse.ArgumentParser(prog='undo', usage='%(prog)s [options]')
     parser.add_argument('tasks',
         nargs='+',
+        type=int,
         help='ID of the task.',
         )
     options = parser.parse_args(args)
@@ -176,6 +201,7 @@ def do_task(args: typing.List[str], data_file: str) -> int:
     parser = argparse.ArgumentParser(prog='del', usage='%(prog)s [options]')
     parser.add_argument('tasks',
         nargs='+',
+        type=int,
         help='ID of the task.',
         )
     options = parser.parse_args(args)
