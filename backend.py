@@ -120,3 +120,23 @@ def create_task(conn: sqlite.Connection, task: Task):
         conn.execute(sql, (task.info, task.done))
     except sqlite.DatabaseError as err:
         raise SystemExit from err
+
+
+@with_connection
+@require_arguments('task_ids')
+def do_tasks(conn: sqlite.Connection, task_ids: typing.List[str]):
+    sql = 'UPDATE tasks SET done = 1 WHERE id = ?'
+    try:
+        conn.executemany(sql, task_ids)
+    except sqlite.DatabaseError as err:
+        raise SystemExit from err
+
+
+@with_connection
+@require_arguments('task_ids')
+def undo_tasks(conn: sqlite.Connection, task_ids: typing.List[str]):
+    sql = 'UPDATE tasks SET done = 0 WHERE id = ?'
+    try:
+        conn.executemany(sql, task_ids)
+    except sqlite.DatabaseError as err:
+        raise SystemExit from err

@@ -83,7 +83,7 @@ def list_tasks(args: typing.List[str], data_file: str) -> int:
         action='store_true',
         help='List only completed tasks.'
     )
-    flags = parser.parse_args(args)
+    options = parser.parse_args(args)
     
     tasks = None
     try:
@@ -92,10 +92,10 @@ def list_tasks(args: typing.List[str], data_file: str) -> int:
         print_error(str(error))
         return 1
 
-    if flags.all:
+    if options.all:
         tasks.sort(key = lambda t: int(t.done))
     
-    elif flags.done:
+    elif options.done:
         tasks = list(filter(lambda t: t.done, tasks))
     
     else:
@@ -121,6 +121,48 @@ def add_task(args: typing.List[str], data_file: str) -> int:
         backend.create_task(
             data_file,
             task = backend.Task(info = task_info)
+            )
+    except backend.Error as error:
+        print_error(str(error))
+        return 1
+    return 0
+
+
+@register_command('done')
+@require_data_file
+def do_task(args: typing.List[str], data_file: str) -> int:
+    parser = argparse.ArgumentParser(prog='done', usage='%(prog)s [options]')
+    parser.add_argument('tasks',
+        nargs='+',
+        help='ID of the task.',
+        )
+    options = parser.parse_args(args)
+    
+    try:
+        backend.do_tasks(
+            data_file,
+            task_ids = options.tasks
+            )
+    except backend.Error as error:
+        print_error(str(error))
+        return 1
+    return 0
+
+
+@register_command('undo')
+@require_data_file
+def do_task(args: typing.List[str], data_file: str) -> int:
+    parser = argparse.ArgumentParser(prog='undo', usage='%(prog)s [options]')
+    parser.add_argument('tasks',
+        nargs='+',
+        help='ID of the task.',
+        )
+    options = parser.parse_args(args)
+    
+    try:
+        backend.undo_tasks(
+            data_file,
+            task_ids = options.tasks
             )
     except backend.Error as error:
         print_error(str(error))
