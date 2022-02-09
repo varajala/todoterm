@@ -6,6 +6,14 @@ import functools
 from dataclasses import dataclass
 
 
+class Error(Exception):
+    def __init__(self, message: str):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
 @dataclass
 class Task:
     info: str
@@ -62,7 +70,7 @@ def with_connection(func: typing.Callable) -> typing.Callable:
         
         conn = create_connection(filepath)
         if conn is None:
-            raise sqlite.DatabaseError()
+            raise Error('Unbale to read data')
         connection = conn
         
         try:
@@ -80,5 +88,5 @@ def with_connection(func: typing.Callable) -> typing.Callable:
 def init_schema(conn: sqlite.Connection):
     script = read_script('schema.sql')
     if script is None:
-        raise sqlite.DatabaseError()
+        raise SystemExit("FATAL ERROR - Script not found: 'schema.sql'")
     conn.executescript(script)
