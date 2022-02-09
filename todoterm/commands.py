@@ -1,4 +1,3 @@
-from atexit import register
 import typing
 import functools
 import sys
