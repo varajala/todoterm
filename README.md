@@ -15,7 +15,10 @@ First create a sqlite database file with the following command:
     python -m todoterm init
 
 
-This creates a file named **.todo** in the current working directory.
+This creates a sqlite database file named **.todo** in the current working directory.
+Todoterm always modifies the database in the current working directory.
+
+
 Next add new tasks with the following command:
 
     python -m todoterm add "Task description here..."
