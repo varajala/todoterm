@@ -47,7 +47,10 @@ def create_connection(filepath: str) -> typing.Optional[sqlite.Connection]:
 
 
 def read_script(name: str) -> typing.Optional[str]:
-    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
+    script_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        , name
+        )
     if not os.path.exists(script_path):
         return None
 

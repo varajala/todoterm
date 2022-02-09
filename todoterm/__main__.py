@@ -2,7 +2,7 @@ import sys
 import os
 import typing
 
-import commands
+import todoterm.commands as commands
 
 
 def main(argv: typing.List[str]) -> int:

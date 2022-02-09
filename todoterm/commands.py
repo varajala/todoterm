@@ -1,10 +1,11 @@
+from atexit import register
 import typing
 import functools
 import sys
 import os
 import argparse
 
-import backend
+import todoterm.backend as backend
 
 
 class Colors:
@@ -76,7 +77,10 @@ def run(args: typing.List[str], data_file: str) -> int:
     command_name = args.pop(0)
     command = commands.get(command_name, None)
     if command is None:
-        print_error(f"Unknown command: '{command_name}'.")
+        print_error(
+            f"Unknown command: '{command_name}'."
+            +  " See 'help' for all available commands."
+        )
         return 1
     
     return command(args, data_file)
@@ -87,6 +91,13 @@ def register_command(alias: str) -> CommandType:
         commands[alias] = func
         return func
     return wrapper
+
+
+@register_command('help')
+def show_help(args: typing.List[str], data_file: str) -> int:
+    """Show this help message and exit."""
+    print_usage()
+    return 0
 
 
 @register_command('init')
