@@ -29,7 +29,7 @@ List tasks with the **list** - command:
     python -m todoterm list
 
 
-List tasks with the **del** - command:
+Delete tasks with the **del** - command:
 
     python -m todoterm del
 
