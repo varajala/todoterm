@@ -1,3 +1,4 @@
+from curses import keyname
 import typing
 import functools
 import sys
@@ -73,9 +74,16 @@ def create_data_file(args: typing.List[str], data_file: str) -> int:
 @register_command('list')
 @require_data_file
 def list_tasks(args: typing.List[str], data_file: str) -> int:
-    # parser = argparse.ArgumentParser(add_help=False)
-    # parser.add_argument('-a', '--all', action='store_true')
-    # parser.add_argument('-d', '--done', action='store_true')
+    parser = argparse.ArgumentParser(prog='list', usage='%(prog)s [options]')
+    parser.add_argument('-a', '--all',
+        help='List all tasks. Default is only incompleted tasks.',
+        action='store_true'
+        )
+    parser.add_argument('-d', '--done',
+        action='store_true',
+        help='List only completed tasks.'
+    )
+    flags = parser.parse_args(args)
     
     tasks = None
     try:
@@ -84,6 +92,15 @@ def list_tasks(args: typing.List[str], data_file: str) -> int:
         print_error(str(error))
         return 1
 
+    if flags.all:
+        tasks.sort(key = lambda t: int(t.done))
+    
+    elif flags.done:
+        tasks = list(filter(lambda t: t.done, tasks))
+    
+    else:
+        tasks = list(filter(lambda t: not t.done, tasks))
+    
     print(tasks)
     return 0
 
