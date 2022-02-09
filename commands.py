@@ -67,7 +67,7 @@ def require_data_file(func: CommandType) -> CommandType:
 
 
 def run(args: typing.List[str], data_file: str) -> int:
-    if not sys.stdout.isatty():
+    if not sys.stdout.isatty() or sys.platform.startswith('win'):
         Colors.GREEN = Colors.RED = Colors.RESET = ''
     
     if not args:
