@@ -1,5 +1,4 @@
 import sqlite3 as sqlite
-import os
 import typing
 import contextlib
 import functools
@@ -46,18 +45,6 @@ def create_connection(filepath: str) -> typing.Optional[sqlite.Connection]:
     return conn
 
 
-def read_script(name: str) -> typing.Optional[str]:
-    script_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        , name
-        )
-    if not os.path.exists(script_path):
-        return None
-
-    with open(script_path, 'r') as file:
-        return file.read()
-
-
 def with_connection(func: typing.Callable) -> typing.Callable:
     @functools.wraps(func)
     def wrapper(filepath: str, **kwargs) -> typing.Any:
@@ -96,11 +83,14 @@ def require_arguments(*args):
 
 @with_connection
 def init_schema(conn: sqlite.Connection, *args):
-    SCRIPT_FILE = 'schema.sql'
-    script = read_script(SCRIPT_FILE)
-    if script is None:
-        raise SystemExit(f"FATAL ERROR - Script not found: '{SCRIPT_FILE}'")
-    conn.executescript(script)
+    sql = "\n".join([
+        'CREATE TABLE IF NOT EXISTS tasks (',
+        '   id INTEGER PRIMARY KEY AUTOINCREMENT,',
+        '   info TEXT NOT NULL,',
+        '   done INTEGER DEFAULT 0',
+        ');'
+    ])
+    conn.executescript(sql)
 
 
 @with_connection
