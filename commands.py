@@ -40,7 +40,13 @@ def print_tasks(tasks: typing.List[backend.Task]):
 
 
 def print_usage():
-    pass
+    sys.stdout.write('usage: [command]\n\n')
+    sys.stdout.write('commands:\n')
+    
+    for name, command in commands.items():
+        sys.stdout.write('  ' + name.ljust(6))
+        sys.stdout.write(command.__doc__)
+        sys.stdout.write('\n')
 
 
 def print_error(message: str):
@@ -86,6 +92,10 @@ def register_command(alias: str) -> CommandType:
 
 @register_command('init')
 def create_data_file(args: typing.List[str], data_file: str) -> int:
+    """Creates a data file into the current working directory."""
+    parser = argparse.ArgumentParser(prog='init', usage='%(prog)s [options]')
+    parser.parse_args(args)
+    
     try:
         backend.init_schema(data_file)
     except backend.Error as error:
@@ -97,6 +107,7 @@ def create_data_file(args: typing.List[str], data_file: str) -> int:
 @register_command('list')
 @require_data_file
 def list_tasks(args: typing.List[str], data_file: str) -> int:
+    """List saved tasks."""
     parser = argparse.ArgumentParser(prog='list', usage='%(prog)s [options]')
     parser.add_argument('-a', '--all',
         help='List all tasks. Default is only incompleted tasks.',
@@ -131,11 +142,14 @@ def list_tasks(args: typing.List[str], data_file: str) -> int:
 @register_command('add')
 @require_data_file
 def add_task(args: typing.List[str], data_file: str) -> int:
-    if len(args) < 1:
-        print_error('Description is required for the new task.')
-        return 1
+    """Create new task with the given description."""
+    parser = argparse.ArgumentParser(prog='add', usage='%(prog)s [options]')
+    parser.add_argument('description',
+        help='Description for the new task',
+        )
+    options = parser.parse_args(args)
     
-    task_info = args.pop(0)
+    task_info = options.description
     if not task_info:
         print_error("Task description can't be blank.")
         return 1
@@ -154,11 +168,12 @@ def add_task(args: typing.List[str], data_file: str) -> int:
 @register_command('done')
 @require_data_file
 def do_task(args: typing.List[str], data_file: str) -> int:
+    """Mark tasks as done. Takes a listing of task IDs as argument."""
     parser = argparse.ArgumentParser(prog='done', usage='%(prog)s [options]')
     parser.add_argument('tasks',
         nargs='+',
         type=int,
-        help='ID of the task.',
+        help='IDs of the updated tasks.',
         )
     options = parser.parse_args(args)
     
@@ -175,12 +190,13 @@ def do_task(args: typing.List[str], data_file: str) -> int:
 
 @register_command('undo')
 @require_data_file
-def do_task(args: typing.List[str], data_file: str) -> int:
+def undo_task(args: typing.List[str], data_file: str) -> int:
+    """Undo tasks. Takes a listing of task IDs as argument."""
     parser = argparse.ArgumentParser(prog='undo', usage='%(prog)s [options]')
     parser.add_argument('tasks',
         nargs='+',
         type=int,
-        help='ID of the task.',
+        help='IDs of the updated tasks.',
         )
     options = parser.parse_args(args)
     
@@ -197,12 +213,13 @@ def do_task(args: typing.List[str], data_file: str) -> int:
 
 @register_command('del')
 @require_data_file
-def do_task(args: typing.List[str], data_file: str) -> int:
+def delete_task(args: typing.List[str], data_file: str) -> int:
+    """Delete tasks. Takes a listing of task IDs as argument."""
     parser = argparse.ArgumentParser(prog='del', usage='%(prog)s [options]')
     parser.add_argument('tasks',
         nargs='+',
         type=int,
-        help='ID of the task.',
+        help='IDs of the deleted tasks.',
         )
     options = parser.parse_args(args)
     
