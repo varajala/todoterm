@@ -6,10 +6,8 @@ import commands
 
 
 def main(argv: typing.List[str]) -> int:
-    data_file =  os.path.join(os.getcwd(), '.todo')
-    if not os.path.exists(data_file):
-        return 1
-
+    DATA_FILE_NAME = '.todo'
+    data_file =  os.path.join(os.getcwd(), DATA_FILE_NAME)
     return commands.run(argv, data_file)
 
 
