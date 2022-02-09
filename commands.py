@@ -1,4 +1,3 @@
-from curses import keyname
 import typing
 import functools
 import sys
