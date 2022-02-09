@@ -140,3 +140,13 @@ def undo_tasks(conn: sqlite.Connection, task_ids: typing.List[str]):
         conn.executemany(sql, task_ids)
     except sqlite.DatabaseError as err:
         raise SystemExit from err
+
+
+@with_connection
+@require_arguments('task_ids')
+def delete_tasks(conn: sqlite.Connection, task_ids: typing.List[str]):
+    sql = 'DELETE FROM tasks WHERE id = ?'
+    try:
+        conn.executemany(sql, task_ids)
+    except sqlite.DatabaseError as err:
+        raise SystemExit from err

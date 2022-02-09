@@ -168,3 +168,24 @@ def do_task(args: typing.List[str], data_file: str) -> int:
         print_error(str(error))
         return 1
     return 0
+
+
+@register_command('del')
+@require_data_file
+def do_task(args: typing.List[str], data_file: str) -> int:
+    parser = argparse.ArgumentParser(prog='del', usage='%(prog)s [options]')
+    parser.add_argument('tasks',
+        nargs='+',
+        help='ID of the task.',
+        )
+    options = parser.parse_args(args)
+    
+    try:
+        backend.delete_tasks(
+            data_file,
+            task_ids = options.tasks
+            )
+    except backend.Error as error:
+        print_error(str(error))
+        return 1
+    return 0
