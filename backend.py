@@ -63,10 +63,10 @@ def read_script(name: str) -> typing.Optional[str]:
 
 def with_connection(func: typing.Callable) -> typing.Callable:
     @functools.wraps(func)
-    def wrapper(filepath: str) -> typing.Any:
+    def wrapper(filepath: str, **kwargs) -> typing.Any:
         global connection
         if connection is not None:
-            return func(connection)
+            return func(connection, **kwargs)
         
         conn = create_connection(filepath)
         if conn is None:
@@ -74,7 +74,7 @@ def with_connection(func: typing.Callable) -> typing.Callable:
         connection = conn
         
         try:
-            return_value = func(conn)
+            return_value = func(conn, **kwargs)
             conn.commit()
             return return_value
         
@@ -84,9 +84,39 @@ def with_connection(func: typing.Callable) -> typing.Callable:
     return wrapper
 
 
+def require_arguments(*args):
+    def outer_wrapper(func):
+        def inner_wrapper(data_file: str, **kwargs):
+            arguments = list()
+            for argument in args:
+                if argument not in kwargs:
+                    raise SystemExit(f"Function '{func.__qualname__}' missing argument '{argument}'")
+                arguments.append(kwargs.pop(argument))
+            return func(data_file, *tuple(arguments), **kwargs)
+        return inner_wrapper
+    return outer_wrapper
+
+
 @with_connection
-def init_schema(conn: sqlite.Connection):
-    script = read_script('schema.sql')
+def init_schema(conn: sqlite.Connection, *args):
+    SCRIPT_FILE = 'schema.sql'
+    script = read_script(SCRIPT_FILE)
     if script is None:
-        raise SystemExit("FATAL ERROR - Script not found: 'schema.sql'")
+        raise SystemExit(f"FATAL ERROR - Script not found: '{SCRIPT_FILE}'")
     conn.executescript(script)
+
+
+@with_connection
+def retrieve_tasks(conn: sqlite.Connection, *args):
+    cursor = conn.execute("SELECT * FROM tasks")
+    return cursor.fetchall()
+
+
+@with_connection
+@require_arguments('task')
+def create_task(conn: sqlite.Connection, task: Task):
+    sql = 'INSERT INTO tasks (info, done) VALUES (?, ?)'
+    try:
+        conn.execute(sql, (task.info, task.done))
+    except sqlite.DatabaseError as err:
+        raise SystemExit from err

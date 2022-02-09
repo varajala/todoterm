@@ -2,6 +2,7 @@ import typing
 import functools
 import sys
 import os
+import argparse
 
 import backend
 
@@ -72,4 +73,39 @@ def create_data_file(args: typing.List[str], data_file: str) -> int:
 @register_command('list')
 @require_data_file
 def list_tasks(args: typing.List[str], data_file: str) -> int:
+    # parser = argparse.ArgumentParser(add_help=False)
+    # parser.add_argument('-a', '--all', action='store_true')
+    # parser.add_argument('-d', '--done', action='store_true')
+    
+    tasks = None
+    try:
+        tasks = backend.retrieve_tasks(data_file)
+    except backend.Error as error:
+        print_error(str(error))
+        return 1
+
+    print(tasks)
+    return 0
+
+
+@register_command('add')
+@require_data_file
+def add_task(args: typing.List[str], data_file: str) -> int:
+    if len(args) < 1:
+        print_error('Description is required for the new task.')
+        return 1
+    
+    task_info = args.pop(0)
+    if not task_info:
+        print_error("Task description can't be blank.")
+        return 1
+    
+    try:
+        backend.create_task(
+            data_file,
+            task = backend.Task(info = task_info)
+            )
+    except backend.Error as error:
+        print_error(str(error))
+        return 1
     return 0
