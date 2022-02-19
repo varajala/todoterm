@@ -8,7 +8,7 @@ def read_long_descrition():
 
 setup(
     name = 'todoterm',
-    version = '1.0.1',
+    version = '1.0.2',
     description = 'A simple TODO command line application',
     long_description = read_long_descrition(),
     long_description_content_type = "text/markdown",

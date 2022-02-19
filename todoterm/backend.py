@@ -48,14 +48,9 @@ def create_connection(filepath: str) -> typing.Optional[sqlite.Connection]:
 def with_connection(func: typing.Callable) -> typing.Callable:
     @functools.wraps(func)
     def wrapper(filepath: str, **kwargs) -> typing.Any:
-        global connection
-        if connection is not None:
-            return func(connection, **kwargs)
-        
         conn = create_connection(filepath)
         if conn is None:
             raise Error('Unbale to read data')
-        connection = conn
         
         try:
             return_value = func(conn, **kwargs)
@@ -64,7 +59,6 @@ def with_connection(func: typing.Callable) -> typing.Callable:
         
         finally:
             conn.close()
-            connection = None
     return wrapper
 
 
@@ -114,7 +108,7 @@ def create_task(conn: sqlite.Connection, task: Task):
 def do_tasks(conn: sqlite.Connection, task_ids: typing.List[int]):
     sql = 'UPDATE tasks SET done = 1 WHERE id = ?'
     try:
-        conn.executemany(sql, map(str, task_ids))
+        conn.executemany(sql, [tuple(map(str, task_ids))])
     except sqlite.DatabaseError as err:
         raise SystemExit from err
 
@@ -124,7 +118,7 @@ def do_tasks(conn: sqlite.Connection, task_ids: typing.List[int]):
 def undo_tasks(conn: sqlite.Connection, task_ids: typing.List[int]):
     sql = 'UPDATE tasks SET done = 0 WHERE id = ?'
     try:
-        conn.executemany(sql, map(str, task_ids))
+        conn.executemany(sql, [tuple(map(str, task_ids))])
     except sqlite.DatabaseError as err:
         raise SystemExit from err
 
@@ -134,6 +128,6 @@ def undo_tasks(conn: sqlite.Connection, task_ids: typing.List[int]):
 def delete_tasks(conn: sqlite.Connection, task_ids: typing.List[int]):
     sql = 'DELETE FROM tasks WHERE id = ?'
     try:
-        conn.executemany(sql, map(str, task_ids))
+        conn.executemany(sql, [tuple(map(str, task_ids))])
     except sqlite.DatabaseError as err:
         raise SystemExit from err
